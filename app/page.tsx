@@ -1,101 +1,152 @@
-import Image from "next/image";
+'use client';
+
+import { createApi } from "@/src/app/api";
+import { useQuery } from "@tanstack/react-query";
+import { Button, Select, Skeleton, Space, Table, TableColumnsType, Tabs, Flex, Empty } from "antd";
+import { DefaultOptionType, LabeledValue } from "antd/es/select";
+import axios from "axios";
+import { format } from "date-fns";
+import { useState, useEffect } from "react";
+
+interface DataType {
+  id: string;
+  mark: string;
+  engine: string;
+  equipment: string;
+  price: string;
+  date: string;
+}
+
+const columns: TableColumnsType<DataType> = [
+  {
+    title: 'ID',
+    dataIndex: 'id',
+    width: 200,
+  },
+  {
+    title: 'Марка/модель',
+    dataIndex: 'mark',
+    sorter: (a, b) => a.mark.toUpperCase() < b.mark.toUpperCase() ? -1 : a.mark.toUpperCase() > b.mark.toUpperCase() ? 1 : 0,
+    width: 200,
+  },
+  {
+    title: 'Модификация',
+    dataIndex: 'engine',
+    sorter: (a, b) => a.engine.toUpperCase() < b.engine.toUpperCase() ? -1 : a.engine.toUpperCase() > b.engine.toUpperCase() ? 1 : 0,
+    width: 200,
+  },
+  {
+    title: 'Комплектация',
+    dataIndex: 'equipment',
+    sorter: (a, b) => a.equipment.toUpperCase() < b.equipment.toUpperCase() ? -1 : a.equipment.toUpperCase() > b.equipment.toUpperCase() ? 1 : 0,
+    width: 200,
+  },
+  {
+    title: 'Стоимость',
+    dataIndex: 'price',
+    sorter: (a, b) => +a.price.split(' ')[0] < +b.price.split(' ')[0] ? -1 : +a.price.split(' ')[0] > +b.price.split(' ')[0] ? 1 : 0,
+    width: 200,
+  },
+  {
+    title: 'Дата создания',
+    dataIndex: 'date',
+    sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    width: 200,
+  },
+]
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [activeKey, setActiveKey] = useState('')
+  const [selectValues, setSelectValues] = useState<DefaultOptionType[] | []>([])
+  const api = createApi();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const dataMarks = useQuery({
+    queryKey: ['marks'],
+    queryFn: () => api.main.getMarks(),
+  })
+  const dataModels = useQuery({
+    queryKey: ['models', activeKey],
+    queryFn: ({ queryKey }) => api.main.getModelsMark(queryKey[1]),
+  })
+  const dataMarkRows = useQuery({
+    queryKey: ['markRows', activeKey, selectValues],
+    queryFn: ({ queryKey }) => api.main.getFiltredRows(queryKey[1], queryKey[2]),
+    select: (data) => data?.map((item, i) => {
+        return {
+          key: i,
+          id: item.id,
+          mark: `${item.mark} ${item.model ? item.model : ''}`,
+          engine: `${item.engine.volume} ${item.engine.transmission} (${item.engine.power} л.с.) ${item.drive ? item.drive : ''}`,
+          equipment: item.equipmentName === 'ПустаяКомплектация' ? '-' : item.equipmentName,
+          price: `${item.price} ₽`,
+          date: format(item.createdAt, "dd.MM.yyyy 	kk:mm"),
+        }
+    })
+  })
+
+  useEffect(() => {
+    if (!dataMarks.isLoading && dataMarks.data && !dataMarks.isError) {
+      setActiveKey(dataMarks.data[0].mark)
+    }
+  }, [dataMarks.data])
+
+  return (
+    <main className="p-4">
+      {dataMarks.isLoading ?
+      <Space className="mb-[16px] flex flex-nowrap w-full overflow-x-hidden">
+        {Array(30).fill(0).map((_, i) => (
+          <Skeleton.Input key={i} active />
+        ))}
+      </Space>
+      :
+      <Tabs
+        defaultActiveKey={dataMarks.data && dataMarks.data[0].mark}
+        onChange={(key) => {
+          setActiveKey(key)
+          setSelectValues([])
+        }}
+        items={dataMarks.isLoading ? [] : dataMarks.isError ? [] : dataMarks.data && dataMarks.data.map((item, i) => {
+          return {
+            label: `${item.mark} - ${item._count.id}`,
+            key: item.mark,
+          };
+        })}
+    />
+      }
+      <Flex align="flex-start" gap="small" vertical>
+        <h3 className='font-medium'>Модель:</h3>
+        <Select
+          value={selectValues}
+          maxTagCount='responsive'
+          mode="multiple"
+          allowClear
+          style={{ width: '300px' }}
+          placeholder="Please select"
+          options={dataModels.isLoading ? [] : dataModels.isError ? [] : dataModels.data && dataModels.data.filter(item => item.model).map((item) => ({
+            label: item.model,
+            value: item.model,
+          }))}
+          onChange={(value) => setSelectValues(value)}
+          onDeselect={(value) => setSelectValues(selectValues.filter((item: DefaultOptionType) => item !== value))}
+        />
+        <Button onClick={() => setSelectValues([])} type="primary">Сбросить</Button>
+      </Flex>
+      <Table
+        className='mt-[16px]'
+        bordered={true}
+        columns={columns}
+        dataSource={dataMarkRows.isLoading ? [] : dataMarkRows.data}
+        locale={{
+          emptyText: dataMarkRows.isLoading ?
+          <div className="flex flex-col gap-[16px]">
+            {Array(10).fill(0).map((_, i) => (
+              <Skeleton.Node key={i} active style={{ width: '100%', height: '33px' }} />
+            ))}
+          </div>
+          : <Empty />
+        }}
+        scroll={{ x: 'max-content', y: 55 * 10 }}
+      />
+    </main>
   );
 }
